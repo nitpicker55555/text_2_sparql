@@ -78,7 +78,7 @@ def run_query(endpoint_url, query):
 def change_statement(prompt,user_content,mode='run'):
     import openai
 
-    openai.api_key = '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'
+    openai.api_key = ''
     if mode=="run":
         content_str="given the sparql input, please rewrite it to a compete sparql query (just change the key part of the sparql input )to achieve the search goal of "+prompt
     else:
