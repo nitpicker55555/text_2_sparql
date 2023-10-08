@@ -13,6 +13,8 @@ CityGML buildings affected by heavy snow
  Map roof surfaces of buildings over 35m
   Get buildings with height over 40m
 """
+load_dotenv()
+api_key = os.getenv('OPENAI_API_KEY')
 endpoint_url =  "http://localhost:8082/sparql"
 def check_brackets(sparql_query):
     brackets_counter = {
@@ -78,7 +80,7 @@ def run_query(endpoint_url, query):
 def change_statement(prompt,user_content,mode='run'):
     import openai
 
-    openai.api_key = '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'
+    openai.api_key = api_key
     if mode=="run":
         content_str="given the sparql input, please rewrite it to a compete sparql query (just change the key part of the sparql input )to achieve the search goal of "+prompt
     else:
@@ -118,15 +120,14 @@ def change_statement(prompt,user_content,mode='run'):
         print(final_query)
         print('----------')
     return (final_query)
-load_dotenv()
-api_key = os.getenv('OPENAI_API_KEY')
+
 def extract_result(result):
     return result.split('query="""')[1].split('"""')[0]
 from langchain.document_loaders import TextLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
-db3 = Chroma(persist_directory="./chroma_db", embedding_function=OpenAIEmbeddings())
+db3 = Chroma(persist_directory="./chroma_db2", embedding_function=OpenAIEmbeddings())
 template_str="I want to find a complete query, "
 while True:
     first_query=input('input:')

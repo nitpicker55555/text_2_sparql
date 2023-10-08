@@ -1,0 +1,431 @@
+C:\anaconda\python.exe C:/Users/Morning/Desktop/hiwi/llm_sparql/analyse_toml.py
+ Get Hotels over 30m high
+['get', 'hotels', 'over', '30m', 'high']
+['lgdo:Hotel', '?hotelname', '30']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+
+SELECT *
+{
+?linkage a :Association_CityGML_OSM .
+?linkage :matchOSM ?osmentity .
+?linkage :matchCityGML/:mapSurface/bldg:bounds ?citygmlentity .
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+?osmclassname a {= lgdo:Hotel =} .
+OPTIONAL { ?osmentity rdfs:label {= ?hotelname =} .}
+?citygmlentity bldg:measuredHeight ?buildingHeight .
+FILTER(?buildingHeight > {= 30 =} ) .
+?citygmlentity bldg:lod2Solid ?solid .
+?solid geo:asWKT ?citygmlGeom .
+}
+
+ Get buildings over 40m
+['get', 'buildings', 'over', '40m']
+['bldg:Building', '?buildingHeight', 'FILTER(?buildingHeight', '40']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT *
+{
+?building a {= bldg:Building =} .
+?building bldg:measuredHeight {= ?buildingHeight =} .
+{= FILTER(?buildingHeight =} > {= 40 =} ) .
+?building bldg:address ?address_id .
+?address_id rdfs:label ?address_label .
+?building bldg:lod2Solid ?solid .
+?solid geo:asWKT ?geom .
+}
+
+ Get buildings with most roof surfaces
+['get', 'buildings', 'with', 'most', 'roof', 'surfaces']
+['(COUNT(?surface)', '?totalsurface)', 'bldg:Building', '?surface', '?surface', 'bldg:RoofSurface', 'DESC(?totalsurface)']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?building {= (COUNT(?surface) =} AS {= ?totalsurface) =}
+{
+?building a {= bldg:Building =} .
+?building bldg:boundedBy {= ?surface =} .
+{= ?surface =} a {= bldg:RoofSurface =} .
+}
+GROUP BY ?building
+ORDER BY {= DESC(?totalsurface) =}
+
+ Map roof surfaces of buildings over 35m
+['map', 'roof', 'surfaces', 'of', 'buildings', 'over', '35m']
+['bldg:Building', '?buildingHeight', 'FILTER(?buildingHeight', '35', '?surface', '?surface', 'bldg:RoofSurface', '?surface']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?geom
+{
+?building a {= bldg:Building =} .
+?building bldg:measuredHeight {= ?buildingHeight =} .
+{= FILTER(?buildingHeight =} > {= 35 =} ) .
+?building bldg:boundedBy {= ?surface =} .
+{= ?surface =} a {= bldg:RoofSurface =} .
+{= ?surface =} geo:hasGeometry/geo:asWKT ?geom .
+}
+
+ Get citygml surfaces and osm building geometries
+['get', 'citygml', 'surfaces', 'and', 'osm', 'building', 'geometries']
+[':Association_CityGML_OSM', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?citygmlentity', '?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '?osmBuildingHeight', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', '?citygmlGeom', '?citygmlGeomColor)']
+
+PREFIX lgd: <http://linkedgeodata.org/triplify/>
+PREFIX lg: <https://purl.org/lg/>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+SELECT *
+{
+?linkage a {= :Association_CityGML_OSM =} .
+?linkage :matchOSM ?osmentity .
+?linkage {= :matchCityGML/:mapSurface/bldg:bounds =} {= ?citygmlentity =} .
+{= ?citygmlentity =} bldg:measuredHeight {= ?citygmlBuildingHeight =} .
+{= FILTER(?citygmlBuildingHeight =} > 10 ) .
+
+OPTIONAL { ?osmentity lgdo:height {= ?osmBuildingHeight =} . }
+
+{= ?citygmlentity =} bldg:boundedBy {= ?citygmlsurface =} .
+{= ?citygmlsurface =} geo:hasGeometry/geo:asWKT {= ?citygmlGeom =} .
+BIND("chlorophyll,0.5" AS {= ?citygmlGeomColor) =} # Green
+?osmentity geo:hasGeometry/geo:asWKT ?osmGeom .
+BIND("jet,0.8" AS ?osmGeomColor) # Red
+}
+
+ Get citygml solids and osm building geometries
+['get', 'citygml', 'solids', 'and', 'osm', 'building', 'geometries']
+[':Association_CityGML_OSM', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?citygmlentity', '?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '?osmBuildingHeight', '?citygmlentity', 'bldg:lod2Solid', '?solid', '?solid', '?citygmlGeom', '?citygmlGeomColor)']
+
+PREFIX lgd: <http://linkedgeodata.org/triplify/>
+PREFIX lg: <https://purl.org/lg/>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+SELECT *
+{
+?linkage a {= :Association_CityGML_OSM =} .
+?linkage :matchOSM ?osmentity .
+?linkage {= :matchCityGML/:mapSurface/bldg:bounds =} {= ?citygmlentity =} .
+{= ?citygmlentity =} bldg:measuredHeight {= ?citygmlBuildingHeight =} .
+{= FILTER(?citygmlBuildingHeight =} > 10 ) .
+OPTIONAL { ?osmentity lgdo:height {= ?osmBuildingHeight =} . }
+{= ?citygmlentity =} {= bldg:lod2Solid =} {= ?solid =} .
+{= ?solid =} geo:asWKT {= ?citygmlGeom =} .
+BIND("chlorophyll,0.5" AS {= ?citygmlGeomColor) =} # Green
+?osmentity geo:hasGeometry/geo:asWKT ?osmGeom .
+BIND("jet,0.8" AS ?osmGeomColor) # Red
+}
+
+ When a road need to be extended and the affected buildings need to be removed. Calculate the volume/area that needs to be torn down.
+['when', 'a', 'road', 'need', 'to', 'be', 'extended', 'and', 'the', 'affected', 'buildings', 'need', 'to', 'be', 'removed.', 'calculate', 'the', 'volume/area', 'that', 'needs', 'to', 'be', 'torn', 'down.']
+[]
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
+SELECT ?citygmlGeom ?citygmlGeomAreaSqm
+{
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+VALUES ?highwayclasses { lgdo:SecondaryHighway lgdo:TertiaryHighway lgdo:HighwayService lgdo:UnclassifiedHighway } .
+?osmclassname rdf:type ?highwayclasses .
+?osmentity geo:hasGeometry/geo:asWKT ?osmGeom .
+BIND(geof:buffer(?osmGeom, 20 , uom:metre) AS ?impactArea) .
+?citygmlentity bldg:boundedBy ?citygmlsurface .
+?citygmlsurface a bldg:GroundSurface .
+?citygmlsurface geo:hasGeometry/geo:asWKT ?citygmlGeom .
+FILTER(geof:sfIntersects(?impactArea, ?citygmlGeom))
+?citygmlsurface geo:hasGeometry/geo:hasMetricArea ?citygmlGeomAreaSqm .
+}
+
+ When a hurricane passes through a city, people in (residential) building above 15 meters need to be evacuated. Which are the building that is affected?
+['when', 'a', 'hurricane', 'passes', 'through', 'a', 'city,', 'people', 'in', '(residential)', 'building', 'above', '15', 'meters', 'need', 'to', 'be', 'evacuated.', 'which', 'are', 'the', 'building', 'that', 'is', 'affected?']
+[':Association_CityGML_OSM', '?osmentity', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?osmlinkage', ':Association_OSM_Class', '?osmlinkage', ':hasosmid', '?osmentity', '?osmlinkage', ':hasosmclassid', '?highwayclasses', 'lgdo:Residential', 'lgdo:ResidentialHome', 'lgdo:BuildingResidential', 'lgdo:ApartmentBuilding', '?highwayclasses', '?citygmlentity', 'bldg:measuredHeight', '?buildingHeight', 'FILTER(?buildingHeight', '15', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', '?citygmlsurface', '?citygmlGeom', 'BIND("chlorophyll,0.5"', '?citygmlGeomColor)']
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
+SELECT *
+{
+?linkage a {= :Association_CityGML_OSM =} .
+?linkage :matchOSM {= ?osmentity =} .
+?linkage {= :matchCityGML/:mapSurface/bldg:bounds =} {= ?citygmlentity =} .
+{= ?osmlinkage =} a {= :Association_OSM_Class =} .
+{= ?osmlinkage =} {= :hasosmid =} {= ?osmentity =} .
+{= ?osmlinkage =} {= :hasosmclassid =} ?osmclassname .
+VALUES {= ?highwayclasses =} { {= lgdo:Residential =} {= lgdo:ResidentialHome =} {= lgdo:BuildingResidential =} {= lgdo:ApartmentBuilding =} lgdo:House } .
+?osmclassname rdf:type {= ?highwayclasses =} .
+{= ?citygmlentity =} {= bldg:measuredHeight =} {= ?buildingHeight =} .
+{= FILTER(?buildingHeight =} > {= 15 =} ) .
+{= ?citygmlentity =} bldg:boundedBy {= ?citygmlsurface =} .
+{= ?citygmlsurface =} a bldg:GroundSurface .
+{= ?citygmlsurface =} geo:hasGeometry/geo:asWKT {= ?citygmlGeom =} .
+{= BIND("chlorophyll,0.5" =} AS {= ?citygmlGeomColor) =} # Green
+}
+
+ Heavy snow is dangerous for flat roofs/at certain angles. Which buildings are possibly affected
+['heavy', 'snow', 'is', 'dangerous', 'for', 'flat', 'roofs/at', 'certain', 'angles.', 'which', 'buildings', 'are', 'possibly', 'affected']
+['?citygmlentity', 'FILTER(?roofType', '"flat', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', '?citygmlsurface', '?citygmlGeom', 'BIND("jet,0.8"', '?citygmlGeomColor)']
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT *
+{
+{= ?citygmlentity =} bldg:roofSurface/bldg:roofType ?roofType .
+{= FILTER(?roofType =} = {= "flat =} roof") .
+{= ?citygmlentity =} bldg:boundedBy {= ?citygmlsurface =} .
+{= ?citygmlsurface =} a bldg:RoofSurface .
+{= ?citygmlsurface =} geo:hasGeometry/geo:asWKT {= ?citygmlGeom =} .
+{= BIND("jet,0.8" =} AS {= ?citygmlGeomColor) =} # Red
+}
+
+ Find the addresses of buildings with height above 30 meters
+['find', 'the', 'addresses', 'of', 'buildings', 'with', 'height', 'above', '30', 'meters']
+['bldg:measuredHeight', '?buildingHeight', 'FILTER(?buildingHeight', '30']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?address_label
+{
+?building bldg:address ?address_id .
+?address_id rdfs:label ?address_label .
+?building {= bldg:measuredHeight =} {= ?buildingHeight =} .
+{= FILTER(?buildingHeight =} > {= 30 =} ) .
+}
+
+ Find buildings with address
+['find', 'buildings', 'with', 'address']
+['?address_label', 'bldg:address', '?address_id', '?address_id', '?address_label', 'FILTER(CONTAINS(?address_label,']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?building {= ?address_label =}
+{
+?building {= bldg:address =} {= ?address_id =} .
+{= ?address_id =} rdfs:label {= ?address_label =} .
+{= FILTER(CONTAINS(?address_label, =} "Stephansplatz")) .
+}
+
+ Find 10 buildings that have the maximum number of roof surfaces
+['find', '10', 'buildings', 'that', 'have', 'the', 'maximum', 'number', 'of', 'roof', 'surfaces']
+['(COUNT(?surface)', '?totalsurface)', 'bldg:Building', '?surface', '?surface', 'bldg:RoofSurface', 'DESC(?totalsurface)', '10']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+SELECT ?building {= (COUNT(?surface) =} AS {= ?totalsurface) =}
+{
+?building a {= bldg:Building =} .
+?building bldg:boundedBy {= ?surface =} .
+{= ?surface =} a {= bldg:RoofSurface =} .
+}
+GROUP BY ?building
+ORDER BY {= DESC(?totalsurface) =}
+LIMIT {= 10 =}
+
+ Find roof surfaces of buildings over 30 meters
+['find', 'roof', 'surfaces', 'of', 'buildings', 'over', '30', 'meters']
+['?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '30', '?citygmlsurface', '?citygmlsurface', 'bldg:RoofSurface', '?citygmlsurface']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?citygmlGeom
+{
+?citygmlentity bldg:measuredHeight {= ?citygmlBuildingHeight =} .
+{= FILTER(?citygmlBuildingHeight =} > {= 30 =} ) .
+?citygmlentity bldg:boundedBy {= ?citygmlsurface =} .
+{= ?citygmlsurface =} a {= bldg:RoofSurface =} .
+{= ?citygmlsurface =} geo:hasGeometry/geo:asWKT ?citygmlGeom .
+BIND("chlorophyll,0.5" AS ?citygmlGeomColor) # Green
+}
+
+ Find 3D geometries of buildings over 30 meters
+['find', '3d', 'geometries', 'of', 'buildings', 'over', '30', 'meters']
+['?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '30']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?citygmlGeom
+{
+?citygmlentity bldg:measuredHeight {= ?citygmlBuildingHeight =} .
+{= FILTER(?citygmlBuildingHeight =} > {= 30 =} ) .
+?citygmlentity bldg:lod2Solid ?solid .
+?solid geo:asWKT ?citygmlGeom .
+BIND("chlorophyll,0.5" AS ?citygmlGeomColor) # Green
+}
+
+ Find CityGML ground surfaces and OSM building polygons for buildings over 30 meters
+['find', 'citygml', 'ground', 'surfaces', 'and', 'osm', 'building', 'polygons', 'for', 'buildings', 'over', '30', 'meters']
+['?citygmlGeom', ':Association_CityGML_OSM', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?citygmlentity', '?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '30', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', 'bldg:GroundSurface', '?citygmlsurface', '?citygmlGeom', '?citygmlGeomColor)']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT {= ?citygmlGeom =} ?osmGeom
+{
+?linkage a {= :Association_CityGML_OSM =} .
+?linkage :matchOSM ?osmentity .
+?linkage {= :matchCityGML/:mapSurface/bldg:bounds =} {= ?citygmlentity =} .
+{= ?citygmlentity =} bldg:measuredHeight {= ?citygmlBuildingHeight =} .
+{= FILTER(?citygmlBuildingHeight =} > {= 30 =} ) .
+{= ?citygmlentity =} bldg:boundedBy {= ?citygmlsurface =} .
+{= ?citygmlsurface =} a {= bldg:GroundSurface =} .
+{= ?citygmlsurface =} geo:hasGeometry/geo:asWKT {= ?citygmlGeom =} .
+BIND("chlorophyll,0.5" AS {= ?citygmlGeomColor) =} # Green
+?osmentity geo:hasGeometry/geo:asWKT ?osmGeom .
+BIND("jet,0.8" AS ?osmGeomColor) # Red
+}
+
+ Find hotels over 30 meters high (tourists want to have a skyline view of the city)
+['find', 'hotels', 'over', '30', 'meters', 'high', '(tourists', 'want', 'to', 'have', 'a', 'skyline', 'view', 'of', 'the', 'city)']
+['?hotelname', 'lgdo:Hotel', '?hotelname', '30']
+
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+SELECT ?citygmlentity ?buildingHeight {= ?hotelname =} ?citygmlGeom
+{
+?linkage a :Association_CityGML_OSM .
+?linkage :matchOSM ?osmentity .
+?linkage :matchCityGML/:mapSurface/bldg:bounds ?citygmlentity .
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+?osmclassname a {= lgdo:Hotel =} .
+OPTIONAL { ?osmentity rdfs:label {= ?hotelname =} .}
+?citygmlentity bldg:measuredHeight ?buildingHeight .
+FILTER(?buildingHeight > {= 30 =} ) .
+?citygmlentity bldg:lod2Solid ?solid .
+?solid geo:asWKT ?citygmlGeom .
+}
+
+ Find residential buildings under 3m high (emergency evacuation to flood disaster)
+['find', 'residential', 'buildings', 'under', '3m', 'high', '(emergency', 'evacuation', 'to', 'flood', 'disaster)']
+['?residentialclasses', 'lgdo:Residential', 'lgdo:ResidentialHome', 'lgdo:BuildingResidential', 'lgdo:ApartmentBuilding', '?residentialclasses', '?buildingHeight', 'FILTER(?buildingHeight', '3']
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
+SELECT ?citygmlentity ?citygmlGeom
+{
+?linkage a :Association_CityGML_OSM .
+?linkage :matchOSM ?osmentity .
+?linkage :matchCityGML/:mapSurface/bldg:bounds ?citygmlentity .
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+VALUES {= ?residentialclasses =} { {= lgdo:Residential =} {= lgdo:ResidentialHome =} {= lgdo:BuildingResidential =} {= lgdo:ApartmentBuilding =} lgdo:House } .
+?osmclassname rdf:type {= ?residentialclasses =} .
+?citygmlentity bldg:measuredHeight {= ?buildingHeight =} .
+{= FILTER(?buildingHeight =} < {= 3 =} ) .
+?citygmlentity bldg:boundedBy ?citygmlsurface .
+?citygmlsurface a bldg:GroundSurface .
+?citygmlsurface geo:hasGeometry/geo:asWKT ?citygmlGeom .
+BIND("chlorophyll,0.5" AS ?citygmlGeomColor) # Green
+}
+
+ Find residential buildings with non flat roofs (searching for potential roofs for PV)
+['find', 'residential', 'buildings', 'with', 'non', 'flat', 'roofs', '(searching', 'for', 'potential', 'roofs', 'for', 'pv)']
+['?roofType', '?residentialclasses', 'lgdo:Residential', 'lgdo:ResidentialHome', 'lgdo:BuildingResidential', 'lgdo:ApartmentBuilding', '?residentialclasses', 'bldg:roofSurface/bldg:roofType', '?roofType', 'FILTER(?roofType', '"flat', 'roof")', 'bldg:RoofSurface']
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+SELECT ?citygmlGeom {= ?roofType =}
+{
+?linkage a :Association_CityGML_OSM .
+?linkage :matchOSM ?osmentity .
+?linkage :matchCityGML/:mapSurface/bldg:bounds ?citygmlentity .
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+VALUES {= ?residentialclasses =} { {= lgdo:Residential =} {= lgdo:ResidentialHome =} {= lgdo:BuildingResidential =} {= lgdo:ApartmentBuilding =} lgdo:House } .
+?osmclassname rdf:type {= ?residentialclasses =} .
+?citygmlentity {= bldg:roofSurface/bldg:roofType =} {= ?roofType =} .
+{= FILTER(?roofType =} != {= "flat =} {= roof") =} .
+?citygmlentity bldg:boundedBy ?citygmlsurface .
+?citygmlsurface a {= bldg:RoofSurface =} .
+?citygmlsurface geo:hasGeometry/geo:asWKT ?citygmlGeom .
+BIND("jet,0.8" AS ?citygmlGeomColor) # Red
+}
+
+ Find buildings along a certain road within 20 meters and calculate the total affected
+['find', 'buildings', 'along', 'a', 'certain', 'road', 'within', '20', 'meters', 'and', 'calculate', 'the', 'total', 'affected']
+['20']
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
+SELECT ?citygmlGeom ?citygmlGeomAreaSqm
+{
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+VALUES ?highwayclasses { lgdo:SecondaryHighway lgdo:TertiaryHighway lgdo:HighwayService lgdo:UnclassifiedHighway } .
+?osmclassname rdf:type ?highwayclasses .
+?osmentity rdfs:label ?street_name .
+FILTER(CONTAINS(?street_name, "Elisenstraße")) .
+?osmentity geo:hasGeometry/geo:asWKT ?osmGeom .
+BIND(geof:buffer(?osmGeom, {= 20 =} , uom:metre) AS ?impactArea) .
+?citygmlentity bldg:boundedBy ?citygmlsurface .
+?citygmlsurface a bldg:GroundSurface .
+?citygmlsurface geo:hasGeometry/geo:asWKT ?citygmlGeom .
+FILTER(geof:sfIntersects(?impactArea, ?citygmlGeom))
+?citygmlsurface geo:hasGeometry/geo:hasMetricArea ?citygmlGeomAreaSqm .
+}
+
+
+Process finished with exit code 0
