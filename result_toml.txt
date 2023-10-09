@@ -1,4 +1,5 @@
 C:\anaconda\python.exe C:/Users/Morning/Desktop/hiwi/llm_sparql/analyse_toml.py
+_______________ 0
  Get Hotels over 30m high
 ['get', 'hotels', 'over', '30m', 'high']
 ['lgdo:Hotel', '?hotelname', '30']
@@ -25,6 +26,7 @@ FILTER(?buildingHeight > {= 30 =} ) .
 ?solid geo:asWKT ?citygmlGeom .
 }
 
+_______________ 1
  Get buildings over 40m
 ['get', 'buildings', 'over', '40m']
 ['bldg:Building', '?buildingHeight', 'FILTER(?buildingHeight', '40']
@@ -44,6 +46,7 @@ SELECT *
 ?solid geo:asWKT ?geom .
 }
 
+_______________ 2
  Get buildings with most roof surfaces
 ['get', 'buildings', 'with', 'most', 'roof', 'surfaces']
 ['(COUNT(?surface)', '?totalsurface)', 'bldg:Building', '?surface', '?surface', 'bldg:RoofSurface', 'DESC(?totalsurface)']
@@ -62,6 +65,7 @@ SELECT ?building {= (COUNT(?surface) =} AS {= ?totalsurface) =}
 GROUP BY ?building
 ORDER BY {= DESC(?totalsurface) =}
 
+_______________ 3
  Map roof surfaces of buildings over 35m
 ['map', 'roof', 'surfaces', 'of', 'buildings', 'over', '35m']
 ['bldg:Building', '?buildingHeight', 'FILTER(?buildingHeight', '35', '?surface', '?surface', 'bldg:RoofSurface', '?surface']
@@ -81,6 +85,7 @@ SELECT ?geom
 {= ?surface =} geo:hasGeometry/geo:asWKT ?geom .
 }
 
+_______________ 4
  Get citygml surfaces and osm building geometries
 ['get', 'citygml', 'surfaces', 'and', 'osm', 'building', 'geometries']
 [':Association_CityGML_OSM', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?citygmlentity', '?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '?osmBuildingHeight', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', '?citygmlGeom', '?citygmlGeomColor)']
@@ -109,6 +114,7 @@ BIND("chlorophyll,0.5" AS {= ?citygmlGeomColor) =} # Green
 BIND("jet,0.8" AS ?osmGeomColor) # Red
 }
 
+_______________ 5
  Get citygml solids and osm building geometries
 ['get', 'citygml', 'solids', 'and', 'osm', 'building', 'geometries']
 [':Association_CityGML_OSM', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?citygmlentity', '?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '?osmBuildingHeight', '?citygmlentity', 'bldg:lod2Solid', '?solid', '?solid', '?citygmlGeom', '?citygmlGeomColor)']
@@ -135,9 +141,10 @@ BIND("chlorophyll,0.5" AS {= ?citygmlGeomColor) =} # Green
 BIND("jet,0.8" AS ?osmGeomColor) # Red
 }
 
+_______________ 6
  When a road need to be extended and the affected buildings need to be removed. Calculate the volume/area that needs to be torn down.
 ['when', 'a', 'road', 'need', 'to', 'be', 'extended', 'and', 'the', 'affected', 'buildings', 'need', 'to', 'be', 'removed.', 'calculate', 'the', 'volume/area', 'that', 'needs', 'to', 'be', 'torn', 'down.']
-[]
+['?citygmlGeomAreaSqm', '?impactArea)', 'FILTER(geof:sfIntersects(?impactArea,', 'geo:hasGeometry/geo:hasMetricArea', '?citygmlGeomAreaSqm']
 
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX : <http://cui.unige.ch/citygml/2.0/>
@@ -147,7 +154,7 @@ PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX lgdo: <http://linkedgeodata.org/ontology/>
 PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
-SELECT ?citygmlGeom ?citygmlGeomAreaSqm
+SELECT ?citygmlGeom {= ?citygmlGeomAreaSqm =}
 {
 ?osmlinkage a :Association_OSM_Class .
 ?osmlinkage :hasosmid ?osmentity .
@@ -155,14 +162,15 @@ SELECT ?citygmlGeom ?citygmlGeomAreaSqm
 VALUES ?highwayclasses { lgdo:SecondaryHighway lgdo:TertiaryHighway lgdo:HighwayService lgdo:UnclassifiedHighway } .
 ?osmclassname rdf:type ?highwayclasses .
 ?osmentity geo:hasGeometry/geo:asWKT ?osmGeom .
-BIND(geof:buffer(?osmGeom, 20 , uom:metre) AS ?impactArea) .
+BIND(geof:buffer(?osmGeom, 20 , uom:metre) AS {= ?impactArea) =} .
 ?citygmlentity bldg:boundedBy ?citygmlsurface .
 ?citygmlsurface a bldg:GroundSurface .
 ?citygmlsurface geo:hasGeometry/geo:asWKT ?citygmlGeom .
-FILTER(geof:sfIntersects(?impactArea, ?citygmlGeom))
-?citygmlsurface geo:hasGeometry/geo:hasMetricArea ?citygmlGeomAreaSqm .
+{= FILTER(geof:sfIntersects(?impactArea, =} ?citygmlGeom))
+?citygmlsurface {= geo:hasGeometry/geo:hasMetricArea =} {= ?citygmlGeomAreaSqm =} .
 }
 
+_______________ 7
  When a hurricane passes through a city, people in (residential) building above 15 meters need to be evacuated. Which are the building that is affected?
 ['when', 'a', 'hurricane', 'passes', 'through', 'a', 'city,', 'people', 'in', '(residential)', 'building', 'above', '15', 'meters', 'need', 'to', 'be', 'evacuated.', 'which', 'are', 'the', 'building', 'that', 'is', 'affected?']
 [':Association_CityGML_OSM', '?osmentity', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?osmlinkage', ':Association_OSM_Class', '?osmlinkage', ':hasosmid', '?osmentity', '?osmlinkage', ':hasosmclassid', '?highwayclasses', 'lgdo:Residential', 'lgdo:ResidentialHome', 'lgdo:BuildingResidential', 'lgdo:ApartmentBuilding', '?highwayclasses', '?citygmlentity', 'bldg:measuredHeight', '?buildingHeight', 'FILTER(?buildingHeight', '15', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', '?citygmlsurface', '?citygmlGeom', 'BIND("chlorophyll,0.5"', '?citygmlGeomColor)']
@@ -193,9 +201,10 @@ VALUES {= ?highwayclasses =} { {= lgdo:Residential =} {= lgdo:ResidentialHome =}
 {= BIND("chlorophyll,0.5" =} AS {= ?citygmlGeomColor) =} # Green
 }
 
+_______________ 8
  Heavy snow is dangerous for flat roofs/at certain angles. Which buildings are possibly affected
 ['heavy', 'snow', 'is', 'dangerous', 'for', 'flat', 'roofs/at', 'certain', 'angles.', 'which', 'buildings', 'are', 'possibly', 'affected']
-['?citygmlentity', 'FILTER(?roofType', '"flat', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', '?citygmlsurface', '?citygmlGeom', 'BIND("jet,0.8"', '?citygmlGeomColor)']
+['?citygmlentity', 'bldg:roofSurface/bldg:roofType', 'FILTER(?roofType', '"flat', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', 'bldg:RoofSurface', '?citygmlsurface', '?citygmlGeom', 'BIND("jet,0.8"', '?citygmlGeomColor)']
 
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX : <http://cui.unige.ch/citygml/2.0/>
@@ -205,14 +214,15 @@ PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT *
 {
-{= ?citygmlentity =} bldg:roofSurface/bldg:roofType ?roofType .
+{= ?citygmlentity =} {= bldg:roofSurface/bldg:roofType =} ?roofType .
 {= FILTER(?roofType =} = {= "flat =} roof") .
 {= ?citygmlentity =} bldg:boundedBy {= ?citygmlsurface =} .
-{= ?citygmlsurface =} a bldg:RoofSurface .
+{= ?citygmlsurface =} a {= bldg:RoofSurface =} .
 {= ?citygmlsurface =} geo:hasGeometry/geo:asWKT {= ?citygmlGeom =} .
 {= BIND("jet,0.8" =} AS {= ?citygmlGeomColor) =} # Red
 }
 
+_______________ 9
  Find the addresses of buildings with height above 30 meters
 ['find', 'the', 'addresses', 'of', 'buildings', 'with', 'height', 'above', '30', 'meters']
 ['bldg:measuredHeight', '?buildingHeight', 'FILTER(?buildingHeight', '30']
@@ -228,6 +238,7 @@ SELECT ?address_label
 {= FILTER(?buildingHeight =} > {= 30 =} ) .
 }
 
+_______________ 10
  Find buildings with address
 ['find', 'buildings', 'with', 'address']
 ['?address_label', 'bldg:address', '?address_id', '?address_id', '?address_label', 'FILTER(CONTAINS(?address_label,']
@@ -242,6 +253,7 @@ SELECT ?building {= ?address_label =}
 {= FILTER(CONTAINS(?address_label, =} "Stephansplatz")) .
 }
 
+_______________ 11
  Find 10 buildings that have the maximum number of roof surfaces
 ['find', '10', 'buildings', 'that', 'have', 'the', 'maximum', 'number', 'of', 'roof', 'surfaces']
 ['(COUNT(?surface)', '?totalsurface)', 'bldg:Building', '?surface', '?surface', 'bldg:RoofSurface', 'DESC(?totalsurface)', '10']
@@ -258,6 +270,7 @@ GROUP BY ?building
 ORDER BY {= DESC(?totalsurface) =}
 LIMIT {= 10 =}
 
+_______________ 12
  Find roof surfaces of buildings over 30 meters
 ['find', 'roof', 'surfaces', 'of', 'buildings', 'over', '30', 'meters']
 ['?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '30', '?citygmlsurface', '?citygmlsurface', 'bldg:RoofSurface', '?citygmlsurface']
@@ -275,6 +288,7 @@ SELECT ?citygmlGeom
 BIND("chlorophyll,0.5" AS ?citygmlGeomColor) # Green
 }
 
+_______________ 13
  Find 3D geometries of buildings over 30 meters
 ['find', '3d', 'geometries', 'of', 'buildings', 'over', '30', 'meters']
 ['?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '30']
@@ -291,6 +305,7 @@ SELECT ?citygmlGeom
 BIND("chlorophyll,0.5" AS ?citygmlGeomColor) # Green
 }
 
+_______________ 14
  Find CityGML ground surfaces and OSM building polygons for buildings over 30 meters
 ['find', 'citygml', 'ground', 'surfaces', 'and', 'osm', 'building', 'polygons', 'for', 'buildings', 'over', '30', 'meters']
 ['?citygmlGeom', ':Association_CityGML_OSM', ':matchCityGML/:mapSurface/bldg:bounds', '?citygmlentity', '?citygmlentity', '?citygmlBuildingHeight', 'FILTER(?citygmlBuildingHeight', '30', '?citygmlentity', '?citygmlsurface', '?citygmlsurface', 'bldg:GroundSurface', '?citygmlsurface', '?citygmlGeom', '?citygmlGeomColor)']
@@ -313,6 +328,7 @@ BIND("chlorophyll,0.5" AS {= ?citygmlGeomColor) =} # Green
 BIND("jet,0.8" AS ?osmGeomColor) # Red
 }
 
+_______________ 15
  Find hotels over 30 meters high (tourists want to have a skyline view of the city)
 ['find', 'hotels', 'over', '30', 'meters', 'high', '(tourists', 'want', 'to', 'have', 'a', 'skyline', 'view', 'of', 'the', 'city)']
 ['?hotelname', 'lgdo:Hotel', '?hotelname', '30']
@@ -338,6 +354,7 @@ FILTER(?buildingHeight > {= 30 =} ) .
 ?solid geo:asWKT ?citygmlGeom .
 }
 
+_______________ 16
  Find residential buildings under 3m high (emergency evacuation to flood disaster)
 ['find', 'residential', 'buildings', 'under', '3m', 'high', '(emergency', 'evacuation', 'to', 'flood', 'disaster)']
 ['?residentialclasses', 'lgdo:Residential', 'lgdo:ResidentialHome', 'lgdo:BuildingResidential', 'lgdo:ApartmentBuilding', '?residentialclasses', '?buildingHeight', 'FILTER(?buildingHeight', '3']
@@ -368,6 +385,7 @@ VALUES {= ?residentialclasses =} { {= lgdo:Residential =} {= lgdo:ResidentialHom
 BIND("chlorophyll,0.5" AS ?citygmlGeomColor) # Green
 }
 
+_______________ 17
  Find residential buildings with non flat roofs (searching for potential roofs for PV)
 ['find', 'residential', 'buildings', 'with', 'non', 'flat', 'roofs', '(searching', 'for', 'potential', 'roofs', 'for', 'pv)']
 ['?roofType', '?residentialclasses', 'lgdo:Residential', 'lgdo:ResidentialHome', 'lgdo:BuildingResidential', 'lgdo:ApartmentBuilding', '?residentialclasses', 'bldg:roofSurface/bldg:roofType', '?roofType', 'FILTER(?roofType', '"flat', 'roof")', 'bldg:RoofSurface']
@@ -397,6 +415,7 @@ VALUES {= ?residentialclasses =} { {= lgdo:Residential =} {= lgdo:ResidentialHom
 BIND("jet,0.8" AS ?citygmlGeomColor) # Red
 }
 
+_______________ 18
  Find buildings along a certain road within 20 meters and calculate the total affected
 ['find', 'buildings', 'along', 'a', 'certain', 'road', 'within', '20', 'meters', 'and', 'calculate', 'the', 'total', 'affected']
 ['20']

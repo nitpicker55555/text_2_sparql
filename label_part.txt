@@ -1,0 +1,47 @@
+PREFIX---------
+PREFIX lgd: <http://linkedgeodata.org/triplify/>
+PREFIX lg: <https://purl.org/lg/>
+PREFIX : <http://cui.unige.ch/citygml/2.0/>
+PREFIX bldg: <http://www.opengis.net/citygml/building/2.0/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+---------
+OSM---------
+?linkage a :Association_CityGML_OSM .
+?linkage :matchOSM ?osmentity .
+?linkage :matchCityGML/:mapSurface/bldg:bounds ?citygmlentity .
+?osmlinkage a :Association_OSM_Class .
+?osmlinkage :hasosmid ?osmentity .
+?osmlinkage :hasosmclassid ?osmclassname .
+---------
+Residential_building---------
+VALUES ?residentialclasses { lgdo:Residential lgdo:ResidentialHome lgdo:BuildingResidential lgdo:ApartmentBuilding lgdo:House } .
+?osmclassname rdf:type ?residentialclasses .
+---------
+OSM_building---------
+# hotel
+?osmclassname a lgdo:Hotel .
+    OPTIONAL { ?osmentity rdfs:label ?hotelname .}
+---------
+General_buildings---------
+?building a bldg:Building .
+---------
+OSM_numerical_value_height---------
+# Height less than 3
+?citygmlentity bldg:measuredHeight ?buildingHeight .
+FILTER(?buildingHeight < 3 ) .
+?citygmlentity bldg:lod2Solid ?solid .
+?solid geo:asWKT ?citygmlGeom .
+---------
+General_buildings_numerical_value_height---------
+# Height less than 3
+?building a bldg:Building .
+?building bldg:measuredHeight ?buildingHeight .
+FILTER(?buildingHeight < 3 ) .
+?building bldg:address ?address_id .
+?address_id rdfs:label ?address_label .
+?building bldg:lod2Solid ?solid .
+?solid geo:asWKT ?geom .
+---------
+

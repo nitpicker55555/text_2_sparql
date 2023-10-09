@@ -1,13 +1,20 @@
 import re
 def analyse(query_string,keywords):
 
-    # print(query_string)
+
     keywords_list = keywords.lower().split()
     print(keywords)
     print(keywords_list)
-    keywords_list = [word[:-1] if word.endswith('s') else word for word in keywords_list]
+    keywords_list_ori = [word[:-1] if word.endswith('s') else word for word in keywords_list]
     numbers = re.findall(r'\d+', keywords)
-    keywords_list.extend(numbers)
+    keywords_list_ori.extend(numbers)
+    keywords_list=[]
+    # print(query_string)
+    for item in keywords_list_ori:
+        if '/' in item:
+            keywords_list.extend(item.split('/'))
+        else:
+            keywords_list.append(item)
     # print(keywords_list)
     # Check and encapsulate words in query_string
     tokens = re.findall(r'\d+|\S+', query_string)
@@ -52,4 +59,7 @@ name_pattern = re.compile(r'name="([^"]+)"')
 names = name_pattern.findall(toml_content)
 
 for num,i in enumerate(queries):
+    print("_______________",num)
     analyse(i,names[num])
+for num,i in enumerate(names):
+    print(num,i)

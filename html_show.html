@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Highlighter</title>
+    <style>
+        .highlighted {
+            color: red;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script>
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Fetch the file and process its content
+    fetch('result_toml.txt')
+        .then(response => response.text())
+        .then(data => {
+            const escapedData = escapeHtml(data);
+            const highlightedData = escapedData.replace(/\{= (.*?) =\}/g, '<span class="highlighted">$1</span>');
+            const processedData = highlightedData.replace(/\n/g, '<br>');
+            document.getElementById('content').innerHTML = processedData;
+        })
+        .catch(error => {
+            console.error("There was an error reading the file:", error);
+        });
+</script>
+
+</body>
+</html>
